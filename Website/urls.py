@@ -8,6 +8,7 @@ from .views import ubah_warna
 from .views import PostColoredMotifImage
 from .views import generate_ulos_pdf
 from .views import get_progress_view
+from .views import download_coloring_log
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -68,6 +69,7 @@ urlpatterns = [
     path('get_motifs/', views.get_ulos_motifs, name='get_ulos_motifs'),
     path('pewarnaan/progress/<str:task_id>/', get_progress_view, name='pewarnaan_progress'),
     path('generate-pdf/', generate_ulos_pdf, name='generate_pdf'),
+    path('download-log/', download_coloring_log, name='download_coloring_log'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

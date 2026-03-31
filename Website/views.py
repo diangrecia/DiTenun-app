@@ -16,7 +16,7 @@ from .SaveModule import Save
 from .MotifModule import Motif
 from .zipModule import ZIP
 from .deleteModule import Delete
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, FileResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
 from PIL import Image
@@ -37,6 +37,7 @@ import sys, os, re
 import logging
 import json
 import shutil
+from django.conf import settings
 from django.utils.timezone import now
 from django.utils.crypto import get_random_string
 from django.utils.text import get_valid_filename
@@ -59,7 +60,7 @@ except ImportError:
     COLOR_ANALYSIS_AVAILABLE = False
 
 
-
+@csrf_exempt
 # #@login_required(login_url='login')
 def image(request):
     
@@ -72,6 +73,7 @@ def image(request):
     navlink = ['nav-link nav-link-1 ','nav-link nav-link-2 active','nav-link nav-link-3','nav-link nav-link-4']
     return render(request, 'home.html',{"status":status,'navlink1':navlink[0],'navlink2':navlink[1],'navlink3':navlink[2],'navlink4':navlink[3]})
 
+@csrf_exempt
 # #@login_required(login_url='login')
 def loading(request):
     user = request.user
@@ -107,6 +109,8 @@ def updaterecord(request, id):
 
     return redirect('Monitoring')
 
+
+@csrf_exempt
 # #@login_required(login_url='login')
 def generator(request):
     
@@ -137,6 +141,7 @@ def generator(request):
     return render(request, 'started.html', {'navlink1': navlink[0], 'navlink2': navlink[1], 'navlink3': navlink[2], 'navlink4': navlink[3]})
 
 
+@csrf_exempt
 # external lama
 # #@login_required(login_url='login')
 def external(request):
@@ -265,6 +270,8 @@ def external(request):
         'jumlahasal':jumlahasal
     })
 
+
+@csrf_exempt
 # Penggabungan Motif
 def enhance_image(uploaded_file): #Gambar yang diunggah akan diubah menjadi array NumPy dan diproses dengan OpenCV.
     import cv2
@@ -338,6 +345,8 @@ def enhance_image(uploaded_file): #Gambar yang diunggah akan diubah menjadi arra
 #         logger.error(f"Gagal menyimpan motif: {str(e)}")
 #         raise
 
+
+@csrf_exempt
 def save(request):
     if request.method == "POST":
         try:
@@ -386,7 +395,9 @@ def save(request):
                 "message": str(e)
             })
         
-        
+
+
+@csrf_exempt
 def download(request):
     context = {
         'raw_url1': request.session.get('img_before'),
@@ -399,7 +410,9 @@ def download(request):
         'user': request.session.get('user'),
     }
     return render(request, 'download.html', context)
-        
+
+
+@csrf_exempt
 def download(request):
     context = {
         'raw_url1': request.session.get('img_before'),
@@ -412,6 +425,8 @@ def download(request):
         'user': request.session.get('user'),
     }
     return render(request, 'download.html', context)
+
+
 @csrf_exempt
 def PostImage(request):
     if request.method == 'POST':
@@ -628,6 +643,7 @@ def PostImageGabungan(request):
         }, status=405)
 
 
+@csrf_exempt
 def save_image_to_session(request, image):
  
     if 'file' in request.FILES:
@@ -667,6 +683,8 @@ def createpost(request):
 def tes(request):
     return render(request, 'createpost.html')
 
+
+@csrf_exempt
 #@login_required(login_url='login')
 def Search(request):
     filter = request.POST.get('filter')
@@ -695,6 +713,8 @@ def Search(request):
     return render(request,"search.html", context)
 
 
+
+@csrf_exempt
 #@login_required(login_url='login')
 def show(request):
     # user = request.user
@@ -808,7 +828,10 @@ def create_grid_image_from_combined_motif(image_path, output_path):
     except Exception as e:
         print(f"Error creating grid image: {e}")
         return None
-    
+
+
+
+@csrf_exempt  
 #@login_required(login_url='login')
 def motif(request, id):
     import logging
@@ -1092,6 +1115,10 @@ def regenerate_motif(request, id):
         print(traceback.format_exc())
         messages.error(request, f"Gagal meregenerate motif: {str(e)}")
         return redirect('list1')
+    
+
+
+@csrf_exempt
 #@login_required(login_url='login')
 def deleteMotif(request):
 
@@ -1147,6 +1174,8 @@ def help_download(request):
     navlink = ['nav-link nav-link-1 ','nav-link nav-link-2','nav-link nav-link-3','nav-link nav-link-4 active']
     return render(request, "help-download.html", {'navlink1':navlink[0],'navlink2':navlink[1],'navlink3':navlink[2],'navlink4':navlink[3]})
 
+
+@csrf_exempt
 def SignupPage(request):
     if request.user.is_authenticated:
          return redirect('home')
@@ -1189,6 +1218,7 @@ def SignupPage(request):
         return render(request, 'signup.html')
 
 
+@csrf_exempt
 def LoginPage(request):
     if request.user.is_authenticated:
          return redirect('home')
@@ -1209,6 +1239,8 @@ def LogoutPage(request):
     logout(request)
     return redirect('login')
 
+
+@csrf_exempt
 #@login_required(login_url='login')
 def gabungkan_motif(request):
     # Ambil URL gambar dari session
@@ -1445,6 +1477,8 @@ def save_combined_motif(request):
     
     return JsonResponse({'status': 'error', 'message': 'Metode tidak diizinkan'}, status=405)
 
+
+@csrf_exempt
 # views.py - perbaikan untuk fungsi upload gambar
 #@login_required(login_url='login')
 def upload_image(request):
@@ -1866,6 +1900,7 @@ def PostColoredMotifImage(request):
 
 logger = logging.getLogger(__name__)
 
+@csrf_exempt
 def motif_gabungan_colored_preview(request, id):
     try:
         motif = MotifForm1.objects.get(id=id)
@@ -2243,3 +2278,15 @@ def generate_ulos_pdf(request):
 
     except Exception as e:
         return HttpResponse(f"Error generating PDF: {e}", status=500)
+    
+def download_coloring_log(request):
+    file_path = os.path.join(settings.BASE_DIR, "logs", "coloring_threads.csv")
+
+    if not os.path.exists(file_path):
+        raise Http404("Log file tidak ditemukan")
+
+    return FileResponse(
+        open(file_path, 'rb'),
+        as_attachment=True,
+        filename="coloring_threads.csv"
+    )
